@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>칭찬스팟 | PraiseSpot</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Nanum Gothic', sans-serif;
+      background-color: #fff9f9;
+      color: #333;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      font-family: 'Jua', sans-serif;
+      font-size: 1.5rem;
+      color: #ff8ba0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    section {
+      min-height: 100vh;
+      padding: 120px 10%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    section.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h2 {
+      font-family: 'Jua', sans-serif;
+      font-size: 2.2rem;
+      color: #ff8ba0;
+      margin-bottom: 20px;
+    }
+
+    p {
+      max-width: 600px;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #444;
+    }
+
+    .btn {
+      margin-top: 30px;
+      background-color: #ff8ba0;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      box-shadow: 0 3px 10px rgba(255,140,160,0.3);
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #ff5f83;
+    }
+
+    .vote-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      width: 100%;
+      max-width: 800px;
+      margin: 30px 0;
+    }
+
+    .vote-card {
+      background: #fff;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .vote-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+
+    .vote-card.selected {
+      background-color: #ffeff2;
+      border: 2px solid #ff8ba0;
+    }
+
+    input[type="text"] {
+      margin-top: 20px;
+      width: 80%;
+      max-width: 400px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    input[type="text"]:focus {
+      border-color: #ff8ba0;
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    footer {
+      padding: 40px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <header>💖 칭찬스팟 | PraiseSpot</header>
+
+  <!-- 인트로 -->
+  <section id="intro">
+    <h2>이번 주, 칭찬받을 친구는 누구일까?</h2>
+    <p>칭찬스팟은 여러분의 마음을 담아 한 주의 “칭찬친구”를 뽑는 공간이에요.<br>
+    따뜻한 한마디와 함께 친구에게 응원의 하이파이브를 보내요!</p>
+    <a href="#vote" class="btn">투표하러 가기</a>
+  </section>
+
+  <!-- 투표 -->
+  <section id="vote">
+    <h2>칭찬할 친구를 선택하세요 🌷</h2>
+    <p>아래에서 한 명을 선택하고, 칭찬 이유를 한 줄로 적어주세요!</p>
+
+    <div class="vote-grid" id="friendList"></div>
+
+    <input type="text" id="reason" placeholder="칭찬 이유를 한 줄로 적어주세요 💌">
+    <button class="btn" id="voteBtn">투표하기</button>
+  </section>
+
+  <!-- 결과 -->
+  <section id="result">
+    <h2>결과 공개까지 하루 남았어요 ⏳</h2>
+    <p>내일 이 시간, 가장 많은 칭찬을 받은 친구와<br>칭찬 이유들이 여기에 공개됩니다!</p>
+
+    <div id="resultList"></div>
+  </section>
+
+  <footer>© 2025 칭찬스팟 | Created with 💗 by Students</footer>
+
+  <script>
+    const names = [
+      "강정현","공시은","권지현","김기연","김나은","김리원","김보예","김솔민","김예서","김주희",
+      "심다은","문소윤","박고균","박시영","서윤주","송민서","손다연","안수빈","이나영","추채원",
+      "이아람","정정빈","조민서","최다원","최민주","최지담","한서영","한수현"
+    ];
+
+    const listContainer = document.getElementById('friendList');
+    let selected = null;
+
+    // 친구 카드 생성
+    names.forEach(name => {
+      const card = document.createElement('div');
+      card.classList.add('vote-card');
+      card.innerText = name;
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selected = name;
+      });
+      listContainer.appendChild(card);
+    });
+
+    // 투표 버튼 클릭
+    document.getElementById('voteBtn').addEventListener('click', () => {
+      const reason = document.getElementById('reason').value.trim();
+      if (!selected) {
+        alert("칭찬할 친구를 선택해주세요!");
+        return;
+      }
+      if (reason.length < 2) {
+        alert("칭찬 이유를 한 줄로 적어주세요!");
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('voteDate', today);
+      localStorage.setItem('voteName', selected);
+      localStorage.setItem('voteReason', reason);
+
+      alert(`${selected}에게 따뜻한 칭찬이 전달됐어요 💖`);
+      document.getElementById('voteBtn').disabled = true;
+    });
+
+    // 하루 후 공개 (시뮬레이션)
+    const voteDate = localStorage.getItem('voteDate');
+    const now = new Date().toISOString().split('T')[0];
+
+    if (voteDate && voteDate !== now) {
+      const name = localStorage.getItem('voteName');
+      const reason = localStorage.getItem('voteReason');
+      const resultBox = document.getElementById('resultList');
+
+      const card = document.createElement('div');
+      card.classList.add('result-card');
+      card.innerHTML = `<h3>🌟 이번 주의 칭찬 친구: ${name}</h3>
+                        <p>💬 이유: “${reason}”</p>`;
+      resultBox.appendChild(card);
+
+      document.querySelector('#result h2').innerText = "이번 주의 칭찬 결과 💐";
+      document.querySelector('#result p').innerText = "여러분의 마음이 따뜻하게 전해졌어요!";
+    }
+
+    // 스크롤 애니메이션
+    const sections = document.querySelectorAll('section');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('show');
+      });
+    }, { threshold: 0.2 });
+    sections.forEach(sec => observer.observe(sec));
+  </script>
+
+</body>
+</html>
